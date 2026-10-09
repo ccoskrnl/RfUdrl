@@ -2,7 +2,7 @@
 # RfUdrl - reflective DLL loader built on Crystal Palace
 #
 name        "RfUdrl"
-describe    "Reflective DLL loader with runtime setup woven in after imports"
+describe    "Reflective DLL loader with runtime setup and an NtContinue entry"
 
 x64:
 	# our loader; +gofirst puts go() at offset 0 of the PIC
@@ -11,6 +11,10 @@ x64:
 
 		# our runtime setup module (TLS, .pdata, per-section protection)
 		load "bin/rdllsetup.x64.o"
+			merge
+
+		# our entry transfer module (synthetic stack + NtContinue)
+		load "bin/transfer.x64.o"
 			merge
 
 		# PIC bootstrap services: fixbss (globals), dfr, resolvers

@@ -11,6 +11,7 @@ bin:
 x64: bin
 	$(CC_64) -DWIN_X64 $(CFLAGS) -c src/loader.c    -o bin/loader.x64.o
 	$(CC_64) -DWIN_X64 $(CFLAGS) -c src/rdllsetup.c -o bin/rdllsetup.x64.o
+	$(CC_64) -DWIN_X64 $(CFLAGS) -c src/transfer.c  -o bin/transfer.x64.o
 
 clean:
 	rm -rf bin

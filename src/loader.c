@@ -1,15 +1,19 @@
 /*
  * RfUdrl - loader entry point.
  *
- * Structurally this is Tradecraft Garden's simple_rdll. The runtime setup this
- * project adds (exception directory, TLS callbacks, per-section protection) is
- * deliberately NOT referenced here: loader.spec redirects ProcessImports to
- * rdll_process_imports, so the setup is woven in instead. That is the point --
- * any other code that processes imports gets the setup too, not just our go().
+ * Structurally this is Tradecraft Garden's simple_rdll. Two things are added and
+ * neither is visible here:
+ *
+ *   - the runtime setup (exception directory, TLS callbacks, per-section
+ *     protection) is woven in by loader.spec, which redirects ProcessImports to
+ *     rdll_process_imports;
+ *   - the entry point is entered through rdll_transfer_execution, which uses
+ *     NtContinue so no return address into this PIC is left on the stack.
  */
 
 #include <windows.h>
 #include "tcg.h"
+#include "transfer.h"
 
 WINBASEAPI LPVOID WINAPI KERNEL32$VirtualAlloc(LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
 
@@ -46,5 +50,6 @@ void go(void) {
 	/* redirected to rdll_process_imports by loader.spec */
 	ProcessImports(&funcs, &data, dst);
 
-	EntryPoint(&data, dst)((HINSTANCE)dst, DLL_PROCESS_ATTACH, NULL);
+	/* hands control over and does not come back */
+	rdll_transfer_execution((void *)EntryPoint(&data, dst), dst, DLL_PROCESS_ATTACH);
 }
